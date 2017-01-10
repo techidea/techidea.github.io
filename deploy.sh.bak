@@ -1,0 +1,6 @@
+hexo generate
+cp -R public/* .deploy/chaozaiai.github.io
+cd .deploy/chaozaiai.github.io
+git add .
+git commit -m   “《人人都能用英语》”
+git push origin master
