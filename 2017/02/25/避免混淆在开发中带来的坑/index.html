@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+
+  <meta name="description" content="避免混淆在开发中带来的坑"/>
+
+
+
+
+  <meta name="keywords" content="编程, 序员乱翻书" />
+
+
+
+
+
+
+
+
+
+
+  <link rel="alternate" href="/default" title="序员乱翻书">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.6.0" />
+
+
+
+<link rel="canonical" href="http://yoursite.com/2017/02/25/避免混淆在开发中带来的坑/"/>
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.6.0" />
+
+
+
+
+
+
+  
+
+
+
+  <script id="baidu_push">
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+
+
+
+
+
+
+
+    <title> 避免混淆在开发中带来的坑 - 序员乱翻书 </title>
+  </head>
+
+  <body><div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/." class="logo">序员乱翻书</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    
+      <a href="/">
+        <li class="mobile-menu-item">
+          
+          
+            首页
+          
+        </li>
+      </a>
+    
+      <a href="/archives/">
+        <li class="mobile-menu-item">
+          
+          
+            归档
+          
+        </li>
+      </a>
+    
+  </ul>
+</nav>
+
+    <div class="container" id="mobile-panel">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">序员乱翻书</a>
+</div>
+
+<nav class="site-navbar">
+  
+    <ul id="menu" class="menu">
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/">
+            
+            
+              首页
+            
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/archives/">
+            
+            
+              归档
+            
+          </a>
+        </li>
+      
+    </ul>
+  
+</nav>
+
+      </header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content">
+            
+  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          避免混淆在开发中带来的坑
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2017-02-25
+        </span>
+        
+        
+      </div>
+    </header>
+
+    
+    
+
+    <div class="post-content">
+      
+        <p>每次代码写完，debug没有问题，测试人员一旦打包好beta分支，总是会出现因为混淆导致数据错误的情况。比如封装好的支付模块，debug没问题，但是打包好的却会出现支付返回的类的字段成了null。把混淆关掉，问题就好了。</p>
+<a id="more"></a>
+<p>从做的第一个项目开始到现在，已经过去整整一年多了。因为混淆的问题，在演示或者product版本使用的时候，频繁出现功能不正常的情况。今天写下篇文章，一定要痛定思痛，吸取经验教训，不能再犯这样的错误了。</p>
+<p><strong>一个项目的开发总共有三个环境</strong></p>
+<ol>
+<li>alpha：开发</li>
+<li>beta（demo）：用于演示和测试</li>
+<li>product：生产环境</li>
+</ol>
+<p><strong>问题来了，究竟应该怎么去避免debug没问题，打包测试或者product就出现问题</strong></p>
+<ul>
+<li>开发人员<br>本地配置打包环境，debug测试没问题后，一定要自己本地打包测试，确认没有问题，再提交代码<br>试人员测试。</li>
+<li>测试人员<br>打包后，使用beta版本测试，并且测试app的所有功能，千万不能只测试修改的部分。这样测试人员能够及早发现因为混淆导致的功能不正常的bug。</li>
+</ul>
+<p>由于混淆导致的问题应该坚决杜绝，因为混淆打包的问题，已经严重的影响了演示、产品的部署，肯定已经达到了领导的忍耐极限，也达到了我的忍耐极限。= =</p>
+<p><strong>修改代码后务必做到以下步骤：</strong></p>
+<ol>
+<li>debug测试</li>
+<li>本地打包测试</li>
+<li>提交代码</li>
+</ol>
+<p><strong>运维人员应该注意的问题</strong><br>发布更新alpha环境后，beta环境的发布一定要从alpha同步过来，product环境的发布一定要从beta同步过来。<br>这样才能保证beta环境测试没有问题后，product同样没有问题。</p>
+
+      
+    </div>
+
+    
+      
+      
+
+  <div class="post-copyright">
+    <p class="copyright-item">
+      <span>原文作者: </span>
+      <a href="http://yoursite.com">zhangchao</a>
+    </p>
+    <p class="copyright-item">
+      <span>原文链接: </span>
+      <a href="http://yoursite.com/2017/02/25/避免混淆在开发中带来的坑/">http://yoursite.com/2017/02/25/避免混淆在开发中带来的坑/</a>
+    </p>
+    <p class="copyright-item">
+      <span>许可协议: </span>
+      
+      <a rel="license" >原创文章，转载请联系作者 chaozaiai@163.com</a>
+    </p>
+  </div>
+
+
+
+      
+      
+    
+
+    
+      <footer class="post-footer">
+        
+          <div class="post-tags">
+            
+              <a href="/tags/编程/">编程</a>
+            
+          </div>
+        
+        
+        
+  <nav class="post-nav">
+    
+      <a class="prev" href="/2017/03/03/《学会提问》/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">《学会提问》</span>
+        <span class="prev-text nav-mobile">上一篇</span>
+      </a>
+    
+    
+      <a class="next" href="/2017/02/19/上海第十一届双年展/">
+        <span class="next-text nav-default">上海第十一届双年展</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+      </footer>
+    
+
+  </article>
+
+
+          </div>
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+      </main>
+
+      <footer id="footer" class="footer">
+
+  <div class="social-links">
+    
+      
+        
+          <a href="mailto:your@email.com" class="iconfont icon-email" title="email"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+    
+    
+      
+      <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    
+  </div>
+
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://hexo.io/">Hexo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even">Even</a>
+  </span>
+
+  <span class="copyright-year">
+    
+    &copy; 
+     
+      2015 - 
+    
+    2018
+
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">zhangchao</span>
+  </span>
+</div>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+
+    
+  
+  
+
+  
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/slideout/slideout.js"></script>
+  
+
+  
+
+
+    <script type="text/javascript" src="/js/src/even.js?v=2.6.0"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=2.6.0"></script>
+
+  </body>
+</html>

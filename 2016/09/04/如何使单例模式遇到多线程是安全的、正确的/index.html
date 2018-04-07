@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+
+  <meta name="description" content="如何使单例模式遇到多线程是安全的、正确的"/>
+
+
+
+
+  <meta name="keywords" content="程序员book, 序员乱翻书" />
+
+
+
+
+
+
+
+
+
+
+  <link rel="alternate" href="/default" title="序员乱翻书">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.6.0" />
+
+
+
+<link rel="canonical" href="http://yoursite.com/2016/09/04/如何使单例模式遇到多线程是安全的、正确的/"/>
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.6.0" />
+
+
+
+
+
+
+  
+
+
+
+  <script id="baidu_push">
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+
+
+
+
+
+
+
+    <title> 如何使单例模式遇到多线程是安全的、正确的 - 序员乱翻书 </title>
+  </head>
+
+  <body><div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/." class="logo">序员乱翻书</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    
+      <a href="/">
+        <li class="mobile-menu-item">
+          
+          
+            首页
+          
+        </li>
+      </a>
+    
+      <a href="/archives/">
+        <li class="mobile-menu-item">
+          
+          
+            归档
+          
+        </li>
+      </a>
+    
+  </ul>
+</nav>
+
+    <div class="container" id="mobile-panel">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">序员乱翻书</a>
+</div>
+
+<nav class="site-navbar">
+  
+    <ul id="menu" class="menu">
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/">
+            
+            
+              首页
+            
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/archives/">
+            
+            
+              归档
+            
+          </a>
+        </li>
+      
+    </ul>
+  
+</nav>
+
+      </header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content">
+            
+  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          如何使单例模式遇到多线程是安全的、正确的
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2016-09-04
+        </span>
+        
+        
+      </div>
+    </header>
+
+    
+    
+
+    <div class="post-content">
+      
+        <p>注明：文中内容总结来自书籍《Java多线程编程核心技术》第六章<br>1）懒汉模式：以下代码是完全错误的，线程不安全。项目中写的代码大多属于这种情况，当不存在多线程访问时这种方式应该是可取的。</p>
+<a id="more"></a>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">  public static LazySingleton getInstance() &#123;</span><br><span class="line">	try &#123;</span><br><span class="line">		if (Instance != null) &#123;</span><br><span class="line"></span><br><span class="line">		&#125; else &#123;</span><br><span class="line">			Thread.sleep(3000);</span><br><span class="line">			Instance = new LazySingleton();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125; catch (InterruptedException exception) &#123;</span><br><span class="line">		exception.printStackTrace();</span><br><span class="line">	&#125;</span><br><span class="line">	return Instance;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>1.1）针对懒汉模式解决方案1： geInstance声明synchronized关键字 ，整个方法上锁<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">  但是因为是同步运行，必须等到上一个线程释放锁以后才能继续执行，所以效率低下</span><br><span class="line">  synchronized public static LazySingleton getInstance() &#123;</span><br><span class="line">	try &#123;</span><br><span class="line">		if (Instance != null) &#123;</span><br><span class="line"></span><br><span class="line">		&#125; else &#123;</span><br><span class="line">			Thread.sleep(3000);</span><br><span class="line">			Instance = new LazySingleton();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125; catch (InterruptedException exception) &#123;</span><br><span class="line">		exception.printStackTrace();</span><br><span class="line">	&#125;</span><br><span class="line">	return Instance;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>1.2）针对懒汉模式解决方案2： 同步代码块 和方案1一样效率低下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">     public static LazySingleton getInstance() &#123;</span><br><span class="line">	try &#123;</span><br><span class="line">		synchronized(LazySingleton.class)&#123;</span><br><span class="line">			if (Instance != null) &#123;</span><br><span class="line"></span><br><span class="line">			&#125; else &#123;</span><br><span class="line">				Thread.sleep(3000);</span><br><span class="line">				Instance = new LazySingleton();</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">				&#125; catch (InterruptedException exception) &#123;</span><br><span class="line">		exception.printStackTrace();</span><br><span class="line">	&#125;</span><br><span class="line">	return Instance;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>1.3）懒汉模式解决方案3： 针对重要代码进行单独同步，然并卵<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">public static LazySingleton getInstance() &#123;</span><br><span class="line">	try &#123;</span><br><span class="line"></span><br><span class="line">		if (Instance != null) &#123;</span><br><span class="line"></span><br><span class="line">		&#125; else &#123;</span><br><span class="line">			Thread.sleep(3000);</span><br><span class="line">			//然并卵，两个不同的线程，仍然会让代码跑到这里，当第一个线程释放锁后，Instance=new LazySingleton()</span><br><span class="line">			//会再次执行，就出现两个实例对象</span><br><span class="line">			synchronized (LazySingleton.class) &#123;</span><br><span class="line">				Instance = new LazySingleton();</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125; catch (InterruptedException exception) &#123;</span><br><span class="line">		exception.printStackTrace();</span><br><span class="line">	&#125;</span><br><span class="line">	return Instance;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>1.4）懒汉模式解决方案4：使用DCL双检查锁机制(双重检查Double-Check Locking)，大多数多线程结合单例使用的解决方案<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">public static LazySingleton getInstance() &#123;</span><br><span class="line">		try &#123;</span><br><span class="line"></span><br><span class="line">			if (Instance != null) &#123;</span><br><span class="line"></span><br><span class="line">			&#125; else &#123;</span><br><span class="line">				Thread.sleep(3000);</span><br><span class="line">				//既保证了不需要同步代码的异步执行性，有保证了单例效果</span><br><span class="line">				//书中的同步代码的异步执行性这样的描述没懂？？？</span><br><span class="line">				synchronized (LazySingleton.class) &#123;</span><br><span class="line">					//保证进入这块代码是异步，如果已经实例化，则不再执行初始化代码</span><br><span class="line">					if (Instance==null) &#123;</span><br><span class="line">						Instance = new LazySingleton();	</span><br><span class="line">					&#125;				</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; catch (InterruptedException exception) &#123;</span><br><span class="line">			exception.printStackTrace();</span><br><span class="line">		&#125;</span><br><span class="line">		return Instance;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure></p>
+<p>2)饿汉模式：书中说getInstance()没有同步 存在线程安全问题，但是在getInstance加了线程休眠，依然hasCode输出一致，所以还没想明白。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">public class HungrySingleton implements Serializable&#123;</span><br><span class="line">	/**</span><br><span class="line">	 * 不能有其他实例变量</span><br><span class="line">	 */</span><br><span class="line">	private static HungrySingleton Instance = new HungrySingleton();</span><br><span class="line">	public static HungrySingleton getInstance() &#123;</span><br><span class="line">		try &#123;</span><br><span class="line">			Thread.sleep(3000);	</span><br><span class="line">		&#125; catch (InterruptedException e) &#123;</span><br><span class="line">			e.printStackTrace();</span><br><span class="line">		</span><br><span class="line">		&#125;		</span><br><span class="line">		return Instance;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>3）静态内置类实现单例模式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">public class StaticInnerSingleton &#123;</span><br><span class="line"></span><br><span class="line">	/*</span><br><span class="line">	 * 静态内之类实现单例模式</span><br><span class="line">	 */</span><br><span class="line">	private static class SingletonObject &#123;</span><br><span class="line">		private static StaticInnerSingleton Instance = new StaticInnerSingleton();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	private String content;</span><br><span class="line"></span><br><span class="line">	private StaticInnerSingleton() &#123;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	public static StaticInnerSingleton getInstance(String content) &#123;</span><br><span class="line">		SingletonObject.Instance.setContent(content);</span><br><span class="line">		return SingletonObject.Instance;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	public String getContent() &#123;</span><br><span class="line">		return content;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	public void setContent(String content) &#123;</span><br><span class="line">		this.content = content;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	public int hashCode() &#123;</span><br><span class="line">		// TODO Auto-generated method stub</span><br><span class="line">		System.out.println(String.valueOf(super.hashCode()) + &quot;: &quot; + this.content);</span><br><span class="line">		return super.hashCode();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>4) 序列化和反序列化的单例模式实现：书中代码是反序列化增加了readResolve 的实现。但是书中是用的protected 关键字修饰，然并卵。然后网址搜索了一篇文章，换成private修饰OK。附上链接[<a href="http://www.cnblogs.com/kakafra/archive/2012/10/26/2740436.html]" target="_blank" rel="noopener">http://www.cnblogs.com/kakafra/archive/2012/10/26/2740436.html]</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">public class SeriealSingleton implements Serializable&#123;</span><br><span class="line"></span><br><span class="line">	private static final long serialVersionUID = -4994911035515393248L;</span><br><span class="line"></span><br><span class="line">	private static class SingletonObject&#123;</span><br><span class="line">		private static final SeriealSingleton Instance = new SeriealSingleton();</span><br><span class="line">	&#125;</span><br><span class="line">	private SeriealSingleton() &#123;</span><br><span class="line">		// TODO Auto-generated constructor stub</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	public static SeriealSingleton getInstance()&#123;</span><br><span class="line">		return SingletonObject.Instance;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	//如果这段代码注释掉，则还是多例 ，书中代码是用protected 修饰这个代码，还是多例模式</span><br><span class="line">	//网上搜到这边文章http://www.cnblogs.com/kakafra/archive/2012/10/26/2740436.html</span><br><span class="line">	//改为private 就是单例了。</span><br><span class="line">	private Object readResolve() throws ObjectStreamException&#123;</span><br><span class="line">		System.out.println(&quot;调用了readResolve方法&quot;);</span><br><span class="line">		return SingletonObject.Instance;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>5) static代码块实现单例模式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">public class StaticBlockSingleton &#123;</span><br><span class="line">	private static StaticBlockSingleton Instance = null;</span><br><span class="line"></span><br><span class="line">	private StaticBlockSingleton() &#123;</span><br><span class="line"></span><br><span class="line">	&#125;</span><br><span class="line">	/*</span><br><span class="line">	 * 静态代码块在使用来的时候已经执行</span><br><span class="line">	 */</span><br><span class="line">	static&#123;</span><br><span class="line">		Instance = new StaticBlockSingleton();</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	public static StaticBlockSingleton getInstance() &#123;</span><br><span class="line">		return Instance;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>6) enum枚举数据类型实现单例模式：应该很少会这样写吧。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">public enum EnumSingleton &#123;</span><br><span class="line">	connectionFactory;</span><br><span class="line">	private Connection connection;</span><br><span class="line">	/*</span><br><span class="line">	 * 枚举enum和静态代码块特性相似，使用枚举时，构造方法会被自动调用</span><br><span class="line">	 * 但是却暴漏了枚举类，违反职责单一原则</span><br><span class="line">	 * EnumBetterSingleton</span><br><span class="line">	 */</span><br><span class="line">	private EnumSingleton() &#123;</span><br><span class="line">		try &#123;</span><br><span class="line">			System.out.println(&quot;Enum Singleton Contructor&quot;);</span><br><span class="line">			String url = &quot;jdbc:sqlserver://&quot;;</span><br><span class="line">			String username = &quot;sa&quot;;</span><br><span class="line">			String password = &quot;&quot;;</span><br><span class="line">			String driverName = &quot;com.microsoft.sqlserver.jdbc.SQLServerDriver&quot;;</span><br><span class="line">			Class.forName(driverName);</span><br><span class="line">			connection = DriverManager.getConnection(url, username, password);</span><br><span class="line">		&#125; catch (ClassNotFoundException e) &#123;</span><br><span class="line">			e.printStackTrace();</span><br><span class="line">		&#125; catch (SQLException e) &#123;</span><br><span class="line">			e.printStackTrace();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	public Connection getConnection()&#123;</span><br><span class="line">		return connection;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>enum枚举数据类型实现单例模式更好的实现方式：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">public class EnumBetterSingleton &#123;</span><br><span class="line">	public enum SelfEnumSingleton &#123;</span><br><span class="line">		connectionFactory;</span><br><span class="line">		private Connection connection;</span><br><span class="line">		private SelfEnumSingleton() &#123;</span><br><span class="line">			try &#123;</span><br><span class="line">				System.out.println(&quot;Enum Singleton Contructor&quot;);</span><br><span class="line">				String url = &quot;jdbc:sqlserver://&quot;;</span><br><span class="line">				String username = &quot;sa&quot;;</span><br><span class="line">				String password = &quot;&quot;;</span><br><span class="line">				String driverName = &quot;com.microsoft.sqlserver.jdbc.SQLServerDriver&quot;;</span><br><span class="line">				Class.forName(driverName);</span><br><span class="line">				connection = DriverManager.getConnection(url, username, password);</span><br><span class="line">			&#125; catch (ClassNotFoundException e) &#123;</span><br><span class="line">				e.printStackTrace();</span><br><span class="line">			&#125; catch (SQLException e) &#123;</span><br><span class="line">				e.printStackTrace();</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		</span><br><span class="line">		public Connection getConnection()&#123;</span><br><span class="line">			return connection;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	public static Connection getConnection()&#123;</span><br><span class="line">		return SelfEnumSingleton.connectionFactory.getConnection();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>综上，关于单例模式总结结束。<br>源码地址：[<a href="https://github.com/chaozaiai/JavaTrain/tree/master/javamultithreading/chapter06]" target="_blank" rel="noopener">https://github.com/chaozaiai/JavaTrain/tree/master/javamultithreading/chapter06]</a></p>
+
+      
+    </div>
+
+    
+      
+      
+
+  <div class="post-copyright">
+    <p class="copyright-item">
+      <span>原文作者: </span>
+      <a href="http://yoursite.com">zhangchao</a>
+    </p>
+    <p class="copyright-item">
+      <span>原文链接: </span>
+      <a href="http://yoursite.com/2016/09/04/如何使单例模式遇到多线程是安全的、正确的/">http://yoursite.com/2016/09/04/如何使单例模式遇到多线程是安全的、正确的/</a>
+    </p>
+    <p class="copyright-item">
+      <span>许可协议: </span>
+      
+      <a rel="license" >原创文章，转载请联系作者 chaozaiai@163.com</a>
+    </p>
+  </div>
+
+
+
+      
+      
+    
+
+    
+      <footer class="post-footer">
+        
+          <div class="post-tags">
+            
+              <a href="/tags/程序员book/">程序员book</a>
+            
+          </div>
+        
+        
+        
+  <nav class="post-nav">
+    
+      <a class="prev" href="/2016/09/11/synchronized与volatile多线程中的作用/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">synchronized与volatile多线程中的作用</span>
+        <span class="prev-text nav-mobile">上一篇</span>
+      </a>
+    
+    
+      <a class="next" href="/2016/09/02/买土豆的故事/">
+        <span class="next-text nav-default">买土豆的故事</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+      </footer>
+    
+
+  </article>
+
+
+          </div>
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+      </main>
+
+      <footer id="footer" class="footer">
+
+  <div class="social-links">
+    
+      
+        
+          <a href="mailto:your@email.com" class="iconfont icon-email" title="email"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+    
+    
+      
+      <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    
+  </div>
+
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://hexo.io/">Hexo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even">Even</a>
+  </span>
+
+  <span class="copyright-year">
+    
+    &copy; 
+     
+      2015 - 
+    
+    2018
+
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">zhangchao</span>
+  </span>
+</div>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+
+    
+  
+  
+
+  
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/slideout/slideout.js"></script>
+  
+
+  
+
+
+    <script type="text/javascript" src="/js/src/even.js?v=2.6.0"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=2.6.0"></script>
+
+  </body>
+</html>

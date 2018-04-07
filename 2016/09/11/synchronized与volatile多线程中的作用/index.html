@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+
+  <meta name="description" content="synchronized与volatile多线程中的作用"/>
+
+
+
+
+  <meta name="keywords" content="程序员book, 序员乱翻书" />
+
+
+
+
+
+
+
+
+
+
+  <link rel="alternate" href="/default" title="序员乱翻书">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.6.0" />
+
+
+
+<link rel="canonical" href="http://yoursite.com/2016/09/11/synchronized与volatile多线程中的作用/"/>
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.6.0" />
+
+
+
+
+
+
+  
+
+
+
+  <script id="baidu_push">
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+
+
+
+
+
+
+
+    <title> synchronized与volatile多线程中的作用 - 序员乱翻书 </title>
+  </head>
+
+  <body><div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/." class="logo">序员乱翻书</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    
+      <a href="/">
+        <li class="mobile-menu-item">
+          
+          
+            首页
+          
+        </li>
+      </a>
+    
+      <a href="/archives/">
+        <li class="mobile-menu-item">
+          
+          
+            归档
+          
+        </li>
+      </a>
+    
+  </ul>
+</nav>
+
+    <div class="container" id="mobile-panel">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">序员乱翻书</a>
+</div>
+
+<nav class="site-navbar">
+  
+    <ul id="menu" class="menu">
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/">
+            
+            
+              首页
+            
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/archives/">
+            
+            
+              归档
+            
+          </a>
+        </li>
+      
+    </ul>
+  
+</nav>
+
+      </header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content">
+            
+  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          synchronized与volatile多线程中的作用
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2016-09-11
+        </span>
+        
+        
+      </div>
+    </header>
+
+    
+    
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#关键字synchronized"><span class="toc-text">关键字synchronized</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#关键字volatile"><span class="toc-text">关键字volatile</span></a></li></ol>
+    </div>
+  </div>
+
+
+    <div class="post-content">
+      
+        <p>注明：文中内容总结来自书籍《Java多线程编程核心技术》第二章</p>
+<h3 id="关键字synchronized"><a href="#关键字synchronized" class="headerlink" title="关键字synchronized"></a>关键字synchronized</h3><a id="more"></a>
+<ul>
+<li>同步</li>
+</ul>
+<p>两个线程访问同一个对象中的同步方法时一定是线程安全的。</p>
+<p>synchronized 修饰的方法一定是排队运行的，只有共享资源的读写访问才需要同步化，否则不需要。</p>
+<ul>
+<li>dirtyRead  脏读：</li>
+</ul>
+<p>出现在读取实例变量时，该变量已经被其他线程修改。而解决脏读的一种方法就是在读取实例变量的方法加上synchronized关键字。这样，当线程A访问该实例的方法A(synchronized修饰)时，线程B如果需要访问该实例方法B(synchronized修饰)，必须等线程A执行完方法A，释放该方法所在的对象锁。</p>
+<p>需要留意的是，当线程A访问实例的synchronized方法时，并不影响线程B访问该实例对象的非synchronized方式。也就是说，线程之间的同步的方法只是同一实例对象的synchronized方法。</p>
+<ul>
+<li>synchronized锁重入</li>
+</ul>
+<p>自己可以再次获取自己的内部锁。也就是说，当线程A获取获取了某个对象的锁，当这个对象锁还没有释放的时候，线程A需要再次获取这个对象锁的时候是可以获取到的，不然就会造成死锁。可重入锁支持父子类继承（子类可以通过“可重入锁”调用父类的同步方法）。</p>
+<ul>
+<li>出现异常，锁会自动释放</li>
+<li>父类的synchronizd修饰的方法，并不会被子类继承。子类如果仍需要继承的方法是同步的，需要加上synchronized关键字</li>
+<li>synchronized同步代码块<ul>
+<li>synchronized(this)锁定当前对象</li>
+<li>synchronized(非this对象)锁定  对象监视器必须为同一个，不然仍然是异步调用</li>
+</ul>
+</li>
+<li>静态同步synchronized方法与synchronized(class)代码块<ul>
+<li>两者持有Class锁等同，但与持有对象锁是不一样的。</li>
+</ul>
+</li>
+<li>数据类型String的常量池<ul>
+<li>因为JVM中具有String常量池缓存的功能，所以讲synchronized(String)同步快与String联合使用时，要注意常量池带来的意外。因为在常量池中两个String “AA” 其实是同一个对象，所以锁对象也是同一个。</li>
+<li>同步synchronized代码块都不适用String作为锁对象。</li>
+</ul>
+</li>
+</ul>
+<h3 id="关键字volatile"><a href="#关键字volatile" class="headerlink" title="关键字volatile"></a>关键字volatile</h3><ul>
+<li>变量在多个线程可见，强制从公共堆栈中取值，不从线程私有数据栈中取值，但是却不能保证原子性。</li>
+<li>volatile解决的是变量读时的可见性问题，但无法保证原子性，对于多个线程访问同一个实例变量还是需要加锁同步。</li>
+</ul>
+<blockquote>
+<p> 线程安全包含原子性和可见性两个方面，Java的同步机制都是围绕这两个方面来确保线程安全的。</p>
+</blockquote>
+<blockquote>
+<p>关键字synchronized可以保证在同一时刻，只有一个线程可以执行某个方法或者某个代码块。包含两个特征：互斥性和可见性。同步synchronized不仅可以解决一个线程看到对象处于不一致的状态，还可以保证进入同步方法或者代码块的每个线程，都看到由同一个锁保护之前所有的修改效果。</p>
+</blockquote>
+<blockquote>
+<p>外练互斥，内修可见</p>
+</blockquote>
+
+      
+    </div>
+
+    
+      
+      
+
+  <div class="post-copyright">
+    <p class="copyright-item">
+      <span>原文作者: </span>
+      <a href="http://yoursite.com">zhangchao</a>
+    </p>
+    <p class="copyright-item">
+      <span>原文链接: </span>
+      <a href="http://yoursite.com/2016/09/11/synchronized与volatile多线程中的作用/">http://yoursite.com/2016/09/11/synchronized与volatile多线程中的作用/</a>
+    </p>
+    <p class="copyright-item">
+      <span>许可协议: </span>
+      
+      <a rel="license" >原创文章，转载请联系作者 chaozaiai@163.com</a>
+    </p>
+  </div>
+
+
+
+      
+      
+    
+
+    
+      <footer class="post-footer">
+        
+          <div class="post-tags">
+            
+              <a href="/tags/程序员book/">程序员book</a>
+            
+          </div>
+        
+        
+        
+  <nav class="post-nav">
+    
+      <a class="prev" href="/2016/10/05/16十一假期/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">16年十一假期</span>
+        <span class="prev-text nav-mobile">上一篇</span>
+      </a>
+    
+    
+      <a class="next" href="/2016/09/04/如何使单例模式遇到多线程是安全的、正确的/">
+        <span class="next-text nav-default">如何使单例模式遇到多线程是安全的、正确的</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+      </footer>
+    
+
+  </article>
+
+
+          </div>
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+      </main>
+
+      <footer id="footer" class="footer">
+
+  <div class="social-links">
+    
+      
+        
+          <a href="mailto:your@email.com" class="iconfont icon-email" title="email"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+    
+    
+      
+      <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    
+  </div>
+
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://hexo.io/">Hexo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even">Even</a>
+  </span>
+
+  <span class="copyright-year">
+    
+    &copy; 
+     
+      2015 - 
+    
+    2018
+
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">zhangchao</span>
+  </span>
+</div>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+
+    
+  
+  
+
+  
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/slideout/slideout.js"></script>
+  
+
+  
+
+
+    <script type="text/javascript" src="/js/src/even.js?v=2.6.0"></script>
+<script type="text/javascript" src="/js/src/bootstrap.js?v=2.6.0"></script>
+
+  </body>
+</html>
